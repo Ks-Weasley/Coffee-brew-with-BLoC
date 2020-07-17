@@ -1,6 +1,7 @@
 import 'package:coffeebrewbloc/authenticate/authenticate_bloc.dart';
 import 'package:coffeebrewbloc/authenticate/authenticate_states.dart';
 import 'package:coffeebrewbloc/bloc_delegate.dart';
+import 'package:coffeebrewbloc/user_interface/bottom_modal_sheet.dart';
 import 'package:coffeebrewbloc/user_interface/loading_indicator.dart';
 import 'package:coffeebrewbloc/user_interface/log_in.dart';
 import 'package:coffeebrewbloc/user_interface/register.dart';
@@ -22,7 +23,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-        primarySwatch: Colors.cyan,
+        primarySwatch: Colors.brown,
       ),
       home: BlocProvider<AuthenticationBloc>(
         create: (BuildContext context) => AuthenticationBloc(),
@@ -51,65 +52,82 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final AuthenticationBloc _authenticationBloc =
-    BlocProvider.of<AuthenticationBloc>(context);
+        BlocProvider.of<AuthenticationBloc>(context);
     return Scaffold(
         key: _scaffoldKey,
         appBar: AppBar(
-          backgroundColor: Colors.amberAccent,
+          backgroundColor: Colors.brown[500],
           title: Text(_scaffoldText),
           actions: <Widget>[
             BlocBuilder<AuthenticationBloc, AuthenticationStates>(
                 builder: (BuildContext context, AuthenticationStates state) {
-                  if (state is LogIn)
-                    return FlatButton.icon(
-                        onPressed: () =>
-                            _authenticationBloc.add(Swap(showLogIn: false)),
-                        icon: Icon(Icons.person),
-                        label: const Text('Register'));
-                  else if (state is Register)
-                    return FlatButton.icon(
-                        onPressed: () =>
-                            _authenticationBloc.add(Swap(showLogIn: true)),
-                        icon: Icon(Icons.person),
-                        label: const Text('LogIn'));
-                  else if (state is Authenticated)
-                    return FlatButton.icon(
+              if (state is LogIn)
+                return FlatButton.icon(
+                    onPressed: () =>
+                        _authenticationBloc.add(Swap(showLogIn: false)),
+                    icon: Icon(Icons.person, color: Colors.white,),
+                    label: const Text(
+                      'Register',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ));
+              else if (state is Register)
+                return FlatButton.icon(
+                    onPressed: () =>
+                        _authenticationBloc.add(Swap(showLogIn: true)),
+                    icon: Icon(Icons.person, color: Colors.white,),
+                    label: const Text('LogIn', style: TextStyle(color: Colors.white),));
+              else if (state is Authenticated)
+                return Row(
+                  children: <Widget>[
+                    FlatButton.icon(
                         onPressed: () {
                           setState(() {
                             _scaffoldText = 'Welcome!';
                           });
                           _authenticationBloc.add(Logout());
                         },
-                        icon: Icon(Icons.person),
-                        label: const Text('SignOut'));
-                  return Container();
-                })
+                        icon: Icon(Icons.person, color: Colors.white,),
+                        label: const Text('SignOut', style: TextStyle(color: Colors.white),)),
+                    FlatButton.icon(
+                        onPressed: () {
+                          showModalBottomSheet<void>(
+                              context: context,
+                              builder: (BuildContext context) => Container(
+                                      child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 20.0, horizontal: 60.0),
+                                    child:
+                                        BottomModalSheet(uid: state.brew.uid),
+                                  )));
+                        },
+                        icon: Icon(Icons.settings, color: Colors.white,),
+                        label: const Text('Settings', style: TextStyle(color: Colors.white),)),
+                  ],
+                );
+              return Container();
+            })
           ],
         ),
         body: BlocListener<AuthenticationBloc, AuthenticationStates>(
           listener: (BuildContext context, AuthenticationStates state) {
-            if (state is Unauthenticated)
-              buildBottomSnackBar(state.error);
+            if (state is Unauthenticated) buildBottomSnackBar(state.error);
 
             if (state is Authenticated)
               setState(() {
-                _scaffoldText = 'HomePage: Hello User!';
+                _scaffoldText = 'Hullo ${state.brew.brew.name}!';
               });
           },
           child: BlocBuilder<AuthenticationBloc, AuthenticationStates>(
               builder: (BuildContext context, AuthenticationStates state) {
-                if (state is Initial)
-                  _authenticationBloc.add(GetDeviceUser());
-                if (state is Loading)
-                  return LoadingIndicator();
-                if (state is Authenticated)
-                  return UserHomePage();
-                if (state is Register)
-                  return RegisterPage();
-                if (state is LogIn)
-                  return LogInPage();
-                return Container();
-              }),
+            if (state is Initial) _authenticationBloc.add(GetDeviceUser());
+            if (state is Loading) return LoadingIndicator();
+            if (state is Authenticated) return UserHomePage();
+            if (state is Register) return RegisterPage();
+            if (state is LogIn) return LogInPage();
+            return Container();
+          }),
         ));
   }
 }

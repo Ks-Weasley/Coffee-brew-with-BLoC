@@ -1,3 +1,5 @@
+import 'package:coffeebrewbloc/authenticate/database.dart';
+
 class AuthenticationStates{}
 
 class Initial extends AuthenticationStates{}
@@ -5,9 +7,9 @@ class Initial extends AuthenticationStates{}
 class Loading extends AuthenticationStates{}
 
 class Authenticated extends AuthenticationStates{
-  Authenticated(this.uid);
+  Authenticated({this.brew});
 
-  final String uid;
+  final Database brew;
 
 }
 
