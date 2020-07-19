@@ -1,5 +1,6 @@
 import 'package:coffeebrewbloc/authenticate/authenticate_bloc.dart';
 import 'package:coffeebrewbloc/authenticate/authenticate_states.dart';
+import 'package:coffeebrewbloc/authenticate/database.dart';
 import 'package:coffeebrewbloc/bloc_delegate.dart';
 import 'package:coffeebrewbloc/user_interface/bottom_modal_sheet.dart';
 import 'package:coffeebrewbloc/user_interface/loading_indicator.dart';
@@ -65,7 +66,10 @@ class _HomePageState extends State<HomePage> {
                 return FlatButton.icon(
                     onPressed: () =>
                         _authenticationBloc.add(Swap(showLogIn: false)),
-                    icon: Icon(Icons.person, color: Colors.white,),
+                    icon: Icon(
+                      Icons.person,
+                      color: Colors.white,
+                    ),
                     label: const Text(
                       'Register',
                       style: TextStyle(
@@ -76,8 +80,14 @@ class _HomePageState extends State<HomePage> {
                 return FlatButton.icon(
                     onPressed: () =>
                         _authenticationBloc.add(Swap(showLogIn: true)),
-                    icon: Icon(Icons.person, color: Colors.white,),
-                    label: const Text('LogIn', style: TextStyle(color: Colors.white),));
+                    icon: Icon(
+                      Icons.person,
+                      color: Colors.white,
+                    ),
+                    label: const Text(
+                      'LogIn',
+                      style: TextStyle(color: Colors.white),
+                    ));
               else if (state is Authenticated)
                 return Row(
                   children: <Widget>[
@@ -88,22 +98,41 @@ class _HomePageState extends State<HomePage> {
                           });
                           _authenticationBloc.add(Logout());
                         },
-                        icon: Icon(Icons.person, color: Colors.white,),
-                        label: const Text('SignOut', style: TextStyle(color: Colors.white),)),
+                        icon: Icon(
+                          Icons.person,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'SignOut',
+                          style: TextStyle(color: Colors.white),
+                        )),
                     FlatButton.icon(
-                        onPressed: () {
+                        onPressed: () async {
+                          final Brew _brew = await Database(uid: state.uid).currentUser;
+
                           showModalBottomSheet<void>(
+                            isScrollControlled: true,
                               context: context,
                               builder: (BuildContext context) => Container(
                                       child: Padding(
                                     padding: const EdgeInsets.symmetric(
                                         vertical: 20.0, horizontal: 60.0),
-                                    child:
-                                        BottomModalSheet(uid: state.brew.uid),
+                                    child: SingleChildScrollView(
+                                      child: Padding(
+                                        padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+                                        child: BottomModalSheet(uid: state.uid, database: _brew,),
+                                      ),
+                                    ),
                                   )));
                         },
-                        icon: Icon(Icons.settings, color: Colors.white,),
-                        label: const Text('Settings', style: TextStyle(color: Colors.white),)),
+                        icon: Icon(
+                          Icons.settings,
+                          color: Colors.white,
+                        ),
+                        label: const Text(
+                          'Settings',
+                          style: TextStyle(color: Colors.white),
+                        )),
                   ],
                 );
               return Container();
@@ -112,20 +141,25 @@ class _HomePageState extends State<HomePage> {
         ),
         body: BlocListener<AuthenticationBloc, AuthenticationStates>(
           listener: (BuildContext context, AuthenticationStates state) {
-            if (state is Unauthenticated) buildBottomSnackBar(state.error);
-
+            if (state is Unauthenticated)
+              buildBottomSnackBar(state.error);
             if (state is Authenticated)
-              setState(() {
-                _scaffoldText = 'Hullo ${state.brew.brew.name}!';
+              setState(()  {
+                _scaffoldText = 'Hullo!';
               });
           },
           child: BlocBuilder<AuthenticationBloc, AuthenticationStates>(
               builder: (BuildContext context, AuthenticationStates state) {
-            if (state is Initial) _authenticationBloc.add(GetDeviceUser());
-            if (state is Loading) return LoadingIndicator();
-            if (state is Authenticated) return UserHomePage();
-            if (state is Register) return RegisterPage();
-            if (state is LogIn) return LogInPage();
+            if (state is Initial)
+              _authenticationBloc.add(GetDeviceUser());
+            if (state is Loading)
+              return LoadingIndicator();
+            if (state is Authenticated)
+              return UserHomePage();
+            if (state is Register)
+              return RegisterPage();
+            if (state is LogIn)
+              return LogInPage();
             return Container();
           }),
         ));

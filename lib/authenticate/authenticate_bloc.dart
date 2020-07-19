@@ -60,9 +60,7 @@ class AuthenticationBloc
     return firebaseUser == null
         ? LogIn()
         : Authenticated(
-            brew: Database(
-                uid: firebaseUser.uid,
-                brew: await getDocument(firebaseUser.uid)));
+      uid: firebaseUser.uid,);
   }
 
 //for anonymous entry for testing purposes
@@ -72,9 +70,7 @@ class AuthenticationBloc
       print('Sucess');
       print(result.user);
       return Authenticated(
-          brew: Database(
-              uid: result.user.uid,
-              brew: await getDocument(result.user.uid)));
+        uid: result.user.uid,);
     } catch (e) {
       print(e.toString());
       return Unauthenticated(e.message);
@@ -90,9 +86,7 @@ class AuthenticationBloc
       print(result.user.toString());
       print('Sucess');
       return Authenticated(
-          brew: Database(
-              uid: result.user.uid,
-              brew: await getDocument(result.user.uid)));
+        uid: result.user.uid,);
     } catch (e) {
       print(e.message);
       return Unauthenticated(e.message);
@@ -104,13 +98,13 @@ class AuthenticationBloc
     try {
       final AuthResult result = await _auth.createUserWithEmailAndPassword(
           email: email.trim(), password: password);
+      result.user.sendEmailVerification();
       print('Sucess');
       print(result.user);
       await Database().updateUserData(result.user.uid, '0', 'new-crew-member', 100);
       return Authenticated(
-          brew: Database(
-              uid: result.user.uid,
-              brew: await getDocument(result.user.uid)));
+        uid: result.user.uid,
+      );
     } catch (e) {
       print(e.toString());
       return Unauthenticated(e.message);

@@ -2,9 +2,10 @@ import 'package:coffeebrewbloc/authenticate/database.dart';
 import 'package:flutter/material.dart';
 
 class BottomModalSheet extends StatefulWidget {
-  const BottomModalSheet({this.uid});
+  const BottomModalSheet({this.uid, this.database});
 
   final String uid;
+  final Brew database;
 
 
   @override
@@ -15,8 +16,7 @@ class _BottomModalSheetState extends State<BottomModalSheet> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   final List<String> sugars = <String>['0', '1', '2', '3', '4', '5'];
-  Brew database;
-  String _currentName;
+  String _currentName ;
 
   String _currentSugar;
 
@@ -25,21 +25,14 @@ class _BottomModalSheetState extends State<BottomModalSheet> {
   @override
   void initState() {
     // TODO: implement initState
-    getCurrentUser();
     super.initState();
-  }
-  void getCurrentUser() async{
-    database= await Database(uid: widget.uid).currentUser;
-    _currentStrength = database.strength;
-    _currentName=database.name;
-    _currentSugar = database.sugars;
+    _currentStrength = widget.database.strength;
+    _currentSugar = widget.database.sugars;
+    _currentName = widget.database.name;
   }
 
   @override
   Widget build(BuildContext context) {
-    setState(() {
-
-    });
     return Form(
       key: _formKey,
       child: Column(
@@ -52,14 +45,14 @@ class _BottomModalSheetState extends State<BottomModalSheet> {
             height: 20.0,
           ),
           TextFormField(
-            initialValue: database.name,
+            initialValue: widget.database.name,
             validator: (String val) =>
             val.isEmpty ? 'Please enter an name' : null,
             onChanged: (String val) => setState(()=> _currentName = val),
           ),
           const SizedBox(height: 20.0),
           DropdownButtonFormField<String>(
-            value: _currentSugar ?? database.sugars,
+            value: _currentSugar ?? widget.database.sugars,
             items: sugars.map((String sugar) {
               return DropdownMenuItem<String>(
                 value: sugar,
@@ -70,8 +63,8 @@ class _BottomModalSheetState extends State<BottomModalSheet> {
           ),
           const SizedBox(height: 20.0),
           Slider(
-            value: (_currentStrength ?? database.strength).toDouble(),
-            activeColor: Colors.brown[_currentStrength ?? database.strength],
+            value: (_currentStrength ?? widget.database.strength).toDouble(),
+            activeColor: Colors.brown[_currentStrength ?? widget.database.strength],
             min: 100,
             max: 900,
             divisions: 8,
@@ -88,13 +81,13 @@ class _BottomModalSheetState extends State<BottomModalSheet> {
             color: Colors.brown,
             onPressed: () async {
               if (_formKey.currentState.validate()) {
+                Navigator.pop(context);
                 await Database(uid: widget.uid).updateUserData(
                     widget.uid,
                     _currentSugar ?? '0',
                     _currentName ?? 'new-crew-member',
                     _currentStrength ?? 100);
               }
-              Navigator.pop(context);
             },
           )
         ],
