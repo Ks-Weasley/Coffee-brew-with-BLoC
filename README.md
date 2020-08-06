@@ -4,7 +4,7 @@ Coffee brew with Bloc State Management
 
 ## Summary of my work
 
-This project is inspired from [@netNinja](https://github.com/iamshaunjp/flutter-firebase)
+This project is inspired from [@iamshaunjp](https://github.com/iamshaunjp/flutter-firebase)
 The original idea uses Provider for State Management. However, my piece of work uses **BLoC State Management**.
 This project illustrates how to use the **Firestore realtime database**.
 
